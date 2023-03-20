@@ -1,0 +1,95 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: 'URL shortenet'
+
+Parameters:
+  TABLENAME:
+    Type: String
+    Description: The DynamoDB table for storing shorten urls
+    Default: UrlShortener
+  AWSREGION:
+    Type: String
+    Default: "us-east-1"
+  AWSENVNAME:
+    Type: String
+    Description: AWS Environment where code is being executed (AWS_SAM_LOCAL or AWS).
+    Default: "AWS_SAM_LOCAL"
+  ENVTYPE:
+    Type: String
+    Description: Developer environment where code is being executed (OSX, Windows, or Linux).
+    Default: "Windows"
+
+Globals:
+  Function:
+      Runtime: nodejs18.x
+      MemorySize: 128
+      Timeout: 30
+      Environment:
+        Variables:
+          BASE_URL: https://url-shortener.example
+          GENERATED_LENGTH: 8
+          DYNAMODB_TABLE: !Ref TABLENAME
+          AWS_DEFAULT_REGION: !Ref AWSREGION
+          AWSENVNAME: !Ref AWSENVNAME
+          ENVTYPE: !Ref ENVTYPE
+          # AWS_DEFAULT_REGION: !Ref AWSREGION
+
+
+Resources:
+  GetShortURL:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: ./app
+      Handler: src/handlers/getShortUrl.lambdaHandler
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            Path: /
+            Method: post
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+  GetOriginalURL:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: ./app
+      Handler: src/handlers/getOriginalUrl.lambdaHandler
+      Events:
+        ShortUri:
+          Type: Api
+          Properties:
+            Path: /{shortUri}
+            Method: get
+        Root:
+          Type: Api
+          Properties:
+            Path: /
+            Method: get
+            
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+
+  UrlTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref TABLENAME
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: OriginalUrl
+          AttributeType: S
+        - AttributeName: ShortUri
+          AttributeType: S
+      KeySchema: 
+        - AttributeName: OriginalUrl
+          KeyType: HASH
+        - AttributeName: ShortUri
+          KeyType: RANGE
+      ProvisionedThroughput: 
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1

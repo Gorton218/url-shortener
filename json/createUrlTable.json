@@ -1,0 +1,28 @@
+{
+    "TableName": "UrlShortener",
+    "KeySchema": [
+        { "AttributeName": "ShortUri", "KeyType": "HASH" }
+    ],
+    "AttributeDefinitions": [
+        { "AttributeName": "ShortUri", "AttributeType": "S" },
+        { "AttributeName": "OriginalUrl", "AttributeType": "S" }
+    ],
+    "GlobalSecondaryIndexes": [
+        {
+            "IndexName": "OriginalUrlIndex",
+            "KeySchema": [
+                {"AttributeName":"OriginalUrl", "KeyType": "HASH"}
+            ],
+            "Projection":{"ProjectionType":"ALL"},
+            "ProvisionedThroughput": {
+                "ReadCapacityUnits": 1,
+                "WriteCapacityUnits": 1
+            }
+        }
+    ],
+    "ProvisionedThroughput": {
+      "ReadCapacityUnits": 1,
+      "WriteCapacityUnits": 1
+    },
+    "BillingMode": "PAY_PER_REQUEST"
+}
