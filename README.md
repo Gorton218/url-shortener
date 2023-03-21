@@ -17,7 +17,7 @@
 ## Usage
 1. navigate to `app` folder
 1. run `npm install` to install all dependencies
-1. run `npm run test`
+1. ~~run `npm run test`~~ (CURRENTLY NOT WORKING)
 1. navigate back to root folder
 1. run `sam local start-api --env-vars json/env.json` for manual API test[(read more)](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-local-start-api.html)
 
